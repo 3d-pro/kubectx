@@ -45,7 +45,7 @@ func (op InteractiveSwitchOp) Run(_, stderr io.Writer) error {
 	}
 
 	var in bytes.Buffer
-	if err := formatNamespaceList(kc, &in); err != nil {
+	if err := formatNamespaceList(kc, &in, stderr); err != nil {
 		return err
 	}
 	if in.Len() == 0 {
@@ -70,7 +70,7 @@ func (op InteractiveSwitchOp) Run(_, stderr io.Writer) error {
 	if choice == "" {
 		return errors.New("you did not choose any of the options")
 	}
-	name, err := switchNamespace(kc, choice, false)
+	name, err := switchNamespace(kc, choice, false, stderr)
 	if err != nil {
 		return fmt.Errorf("failed to switch namespace: %w", err)
 	}

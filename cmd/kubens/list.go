@@ -28,6 +28,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/ahmetb/kubectx/internal/env"
 	"github.com/ahmetb/kubectx/internal/kubeconfig"
 	"github.com/ahmetb/kubectx/internal/printer"
 )
@@ -40,14 +41,14 @@ func (op ListOp) Run(stdout, stderr io.Writer) error {
 	if err := kc.Parse(); err != nil {
 		return fmt.Errorf("kubeconfig error: %w", err)
 	}
-	return formatNamespaceList(kc, stdout)
+	return formatNamespaceList(kc, stdout, stderr)
 }
 
 // formatNamespaceList writes the sorted, current-namespace-highlighted list
 // of namespaces available in the current context to w (one per line). It
 // mirrors what ListOp.Run prints so the interactive fzf picker shows the same
 // list the user would see from `kubens | fzf`.
-func formatNamespaceList(kc *kubeconfig.Kubeconfig, w io.Writer) error {
+func formatNamespaceList(kc *kubeconfig.Kubeconfig, w, stderr io.Writer) error {
 	ctx, err := kc.GetCurrentContext()
 	if err != nil {
 		return fmt.Errorf("failed to get current context: %w", err)
@@ -60,7 +61,7 @@ func formatNamespaceList(kc *kubeconfig.Kubeconfig, w io.Writer) error {
 		return fmt.Errorf("cannot read current namespace: %w", err)
 	}
 
-	ns, err := queryNamespaces(kc)
+	ns, err := queryNamespaces(kc, stderr)
 	if err != nil {
 		return fmt.Errorf("could not list namespaces (is the cluster accessible?): %w", err)
 	}
@@ -75,9 +76,12 @@ func formatNamespaceList(kc *kubeconfig.Kubeconfig, w io.Writer) error {
 	return nil
 }
 
-func queryNamespaces(kc *kubeconfig.Kubeconfig) ([]string, error) {
+func queryNamespaces(kc *kubeconfig.Kubeconfig, stderr io.Writer) ([]string, error) {
 	if os.Getenv("_MOCK_NAMESPACES") != "" {
 		return []string{"ns1", "ns2"}, nil
+	}
+	if os.Getenv(env.EnvKubectl) != "" {
+		return queryNamespacesWithKubectl(kc, stderr)
 	}
 
 	clientset, err := newKubernetesClientSet(kc)

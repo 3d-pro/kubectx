@@ -25,6 +25,8 @@ builds:
 - id: kubectx
   main: ./cmd/kubectx
   binary: kubectx
+  ldflags:
+    - -s -w -X main.version={{ .Tag }}
   env:
   - CGO_ENABLED=0
   goos:
@@ -41,6 +43,8 @@ builds:
 - id: kubens
   main: ./cmd/kubens
   binary: kubens
+  ldflags:
+    - -s -w -X main.version={{ .Tag }}
   env:
   - CGO_ENABLED=0
   goos:

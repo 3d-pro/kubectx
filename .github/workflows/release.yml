@@ -32,8 +32,10 @@ jobs:
       with:
         go-version: '1.25'
     - name: Install Snapcraft
+      if: github.repository == 'ahmetb/kubectx'
       uses: samuelmeuli/action-snapcraft@v3
     - name: Setup Snapcraft
+      if: github.repository == 'ahmetb/kubectx'
       run: |
         # https://github.com/goreleaser/goreleaser/issues/1715
         mkdir -p $HOME/.cache/snapcraft/download
@@ -42,18 +44,21 @@ jobs:
       uses: goreleaser/goreleaser-action@v7
       with:
         version: latest
-        args: release --clean
+        args: release --clean ${{ github.repository != 'ahmetb/kubectx' && '--skip=snapcraft' || '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Update new version for plugin 'ctx' in krew-index
+      if: github.repository == 'ahmetb/kubectx'
       uses: rajatjindal/krew-release-bot@v0.0.51
       with:
         krew_template_file: .krew/ctx.yaml
     - name: Update new version for plugin 'ns' in krew-index
+      if: github.repository == 'ahmetb/kubectx'
       uses: rajatjindal/krew-release-bot@v0.0.51
       with:
         krew_template_file: .krew/ns.yaml
     - name: Publish Snaps to the Snap Store (stable channel)
+      if: github.repository == 'ahmetb/kubectx'
       run: for snap in $(ls dist/*.snap); do snapcraft upload --release=stable $snap; done
       env:
         SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}

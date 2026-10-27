@@ -1,0 +1,22 @@
+# Build and release output
+/bin/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Test coverage and profiling
+/coverage/
+*.coverprofile
+*.prof
+
+# Local Go workspaces
+/go.work
+/go.work.sum
+
+# macOS metadata
+.DS_Store

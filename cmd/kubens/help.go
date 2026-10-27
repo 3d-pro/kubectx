@@ -40,7 +40,11 @@ USAGE:
   %PROG% -c, --current      : show the current namespace
   %PROG% -h,--help          : show this message
   %PROG% -u,--unset         : unset the namespace choice (set to 'default')
-  %PROG% -V,--version       : show version`
+  %PROG% -V,--version       : show version
+
+ENVIRONMENT:
+  KUBECTL                  : executable for namespace queries (e.g. tsh-kubectl);
+                             defaults to the built-in Kubernetes client`
 
 	// TODO this replace logic is duplicated between this and kubectx
 	help = strings.ReplaceAll(help, "%PROG%", selfName())

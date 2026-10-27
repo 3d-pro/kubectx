@@ -101,6 +101,7 @@ func Test_kubectxFilePath_xdgCacheHome(t *testing.T) {
 func Test_kubectxFilePath_error(t *testing.T) {
 	t.Setenv("HOME", "")
 	t.Setenv("USERPROFILE", "")
+	t.Setenv("XDG_CACHE_HOME", "")
 
 	_, err := kubectxPrevCtxFile()
 	if err == nil {

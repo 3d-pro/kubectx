@@ -15,6 +15,9 @@
 package env
 
 const (
+	// EnvKubectl selects an executable for Kubernetes queries instead of client-go.
+	EnvKubectl = "KUBECTL"
+
 	// EnvFZFIgnore describes the environment variable to set to disable
 	// interactive context selection when fzf is installed.
 	EnvFZFIgnore = "KUBECTX_IGNORE_FZF"

@@ -75,7 +75,7 @@ func Test_formatNamespaceList(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	if err := formatNamespaceList(kc, &out); err != nil {
+	if err := formatNamespaceList(kc, &out, io.Discard); err != nil {
 		t.Fatalf("formatNamespaceList: %v", err)
 	}
 	got := out.String()
@@ -87,6 +87,7 @@ func Test_formatNamespaceList(t *testing.T) {
 }
 
 func TestInteractiveSwitchOp_pipesNamespaceListToFzfStdin(t *testing.T) {
+	isolateNamespaceState(t)
 	t.Setenv("KUBECONFIG", writeTestKubeconfigWithNamespace(t))
 	t.Setenv("_MOCK_NAMESPACES", "1")
 	installKubensFakeFzf(t)

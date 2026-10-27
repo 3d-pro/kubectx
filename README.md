@@ -92,6 +92,48 @@ Both `kubectx` and `kubens` support <kbd>Tab</kbd> completion on bash/zsh/fish
 shells to help with long context names. You don't have to remember full context
 names anymore.
 
+### Overriding kubectl
+
+The Go version of `kubens` normally queries Kubernetes using its built-in client.
+Set `KUBECTL` to an executable name in `PATH` or an executable path to use a custom
+command for namespace listing and existence checks instead. Namespace changes
+are still saved directly to your kubeconfig, including when switching back with
+`kubens -`. The `--force` option skips the existence check.
+
+For Teleport, create an executable wrapper named `tsh-kubectl` in your `PATH`:
+
+```sh
+#!/bin/sh
+exec tsh kubectl "$@"
+```
+
+Then configure fish:
+
+```fish
+set -gx KUBECTL tsh-kubectl
+```
+
+Or configure bash/zsh:
+
+```sh
+export KUBECTL=tsh-kubectl
+```
+
+This applies to both the namespace list and the interactive `fzf` picker. The
+command receives the current context and inherits the loaded kubeconfig paths,
+environment, and stdin; stderr remains available for login and MFA prompts.
+Command failures are reported without falling back to the built-in client.
+
+`KUBECTL` must identify a single executable, not a command string such as
+`tsh kubectl`. Shell aliases and fish functions are not executable files; use a
+wrapper script when arguments are needed. If you already use
+`KUBECOLOR_KUBECTL=tsh-kubectl`, you can reuse that same executable by setting
+`KUBECTL=tsh-kubectl` as well.
+
+`kubectx` edits contexts locally, so ordinary context switching does not run
+`kubectl`. Its isolated shell mode also honors `KUBECTL` when extracting the
+selected context's kubeconfig.
+
 -----
 
 ## Installation

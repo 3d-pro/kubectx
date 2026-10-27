@@ -24,6 +24,7 @@ import (
 	errors2 "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/ahmetb/kubectx/internal/env"
 	"github.com/ahmetb/kubectx/internal/kubeconfig"
 	"github.com/ahmetb/kubectx/internal/printer"
 )
@@ -40,7 +41,7 @@ func (s SwitchOp) Run(_, stderr io.Writer) error {
 		return fmt.Errorf("kubeconfig error: %w", err)
 	}
 
-	toNS, err := switchNamespace(kc, s.Target, s.Force)
+	toNS, err := switchNamespace(kc, s.Target, s.Force, stderr)
 	if err != nil {
 		return err
 	}
@@ -48,7 +49,7 @@ func (s SwitchOp) Run(_, stderr io.Writer) error {
 	return err
 }
 
-func switchNamespace(kc *kubeconfig.Kubeconfig, ns string, force bool) (string, error) {
+func switchNamespace(kc *kubeconfig.Kubeconfig, ns string, force bool, stderr io.Writer) (string, error) {
 	ctx, err := kc.GetCurrentContext()
 	if err != nil {
 		return "", fmt.Errorf("failed to get current context: %w", err)
@@ -75,7 +76,7 @@ func switchNamespace(kc *kubeconfig.Kubeconfig, ns string, force bool) (string, 
 	}
 
 	if !force {
-		ok, err := namespaceExists(kc, ns)
+		ok, err := namespaceExists(kc, ns, stderr)
 		if err != nil {
 			return "", fmt.Errorf("failed to query if namespace exists (is cluster accessible?): %w", err)
 		}
@@ -98,10 +99,13 @@ func switchNamespace(kc *kubeconfig.Kubeconfig, ns string, force bool) (string, 
 	return ns, nil
 }
 
-func namespaceExists(kc *kubeconfig.Kubeconfig, ns string) (bool, error) {
+func namespaceExists(kc *kubeconfig.Kubeconfig, ns string, stderr io.Writer) (bool, error) {
 	// for tests
 	if os.Getenv("_MOCK_NAMESPACES") != "" {
 		return ns == "ns1" || ns == "ns2", nil
+	}
+	if os.Getenv(env.EnvKubectl) != "" {
+		return namespaceExistsWithKubectl(kc, ns, stderr)
 	}
 
 	clientset, err := newKubernetesClientSet(kc)
